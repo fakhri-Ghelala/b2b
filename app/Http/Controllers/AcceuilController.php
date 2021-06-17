@@ -11,7 +11,7 @@ class AcceuilController extends Controller
 {
     public function index()
     {
-        $var_test = "test de passage paremtré au view";
+        $var_test = "test de passage paramétré au view";
         $nom = "fakhri";
         $sectors = DB::table('sectors')->orderBy('created_at','desc')->limit(3)->get();
         return view('index',[

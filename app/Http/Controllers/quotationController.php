@@ -1,41 +1,68 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Quotation;
-use Illuminate\Http\Request;
 
-class quotationController extends Controller
+use App\Models\Quotation;
+use App\Models\Quoteline;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use PDF;
+ini_set('max_execution_time', 300);
+class QuotationController extends Controller
 {
-    public function index(){
-        $quotations = Quotation::all();
-        return view('quotation.index',[
-            "quotations"=>$quotations
+    public function show(){
+        $user = auth()->user();
+        $quotation = DB::table('quotations')
+            ->where('user_id',$user->id)
+            ->where('status', 1)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        $quoteLines = DB::table('quotelines')
+            ->where('quotation_id', $quotation->id)
+            ->get();
+
+        return view('quotation.show',[
+            'user'=>$user,
+            'quotation'=>$quotation,
+            'quoteLines'=>$quoteLines
         ]);
     }
-    public function create(){ // retourne un view  contenant le formulaire de creation
-        return view('quotation.create');
+    public function download(){
+        $user = auth()->user();
+        $quotation = DB::table('quotations')
+            ->where('user_id',$user->id)
+            ->where('status', 1)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        $quoteLines = DB::table('quotelines')
+            ->where('quotation_id', $quotation->id)
+            ->get();
+        $pdf = PDF::loadView('quotation.show',[
+            'user'=>$user,
+            'quotation'=>$quotation,
+            'quoteLines'=>$quoteLines
+        ]);
+        return $pdf->download('quotation.pdf');
     }
-    public function store(Request $request){ //prend les informations envoyées par le formulaire et les stocke dans la base
-        //$request->validate([]);  //validation et control de saisie
-        Quotation::create($request->all()); //insetion a la base en utilsant le model crée
-        return redirect()->route('quotations_index');
-    }
-    public function update(Quotation $quotation){
-        return view('quotation.update',['quotation'=>$quotation]);
-    }
-    public function modify(Quotation $id, Request $r){
-        $q = Quotation::find($id)->first();
+    public function checkout( Request $request){
+        $quotation = Quotation::find($request->input('quotation'));
+        $user = User::find($quotation->user_id);
+        $quotation->status = 0;
+        $quotation->save();
+        $quotation = new Quotation;
+        $quotation->status = 1;
+        $quotation->comment = "";
+        $quotation->user_id = $user->id;
 
-       $q->status = $r->status;
-       $q->comment = $r->comment;
-       $q->date_quotation = $r->date_quotation;
-       $q->valid_until = $r->valid_until;
-       $q->tax = $r->tax;
-       $q->update();
-       return redirect()->route('quotations_index');
+        $quotation->save();
+        return redirect('shop')->with('status', 'invoice finalized with success');
     }
-    public function destroy(Quotation $quotation){
-        $quotation->delete();
-        return redirect()->route('quotations_index');
+    public function print(){
+
+    }
+    public function delete(Quotation $quotation, Quoteline $quoteline){
+        DB::table('quotelines')->where('id',$quoteline->id)->delete();
+        return redirect()->back();
     }
 }

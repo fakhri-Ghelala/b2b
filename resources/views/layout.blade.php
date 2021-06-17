@@ -48,7 +48,7 @@
     <div class="container d-flex justify-content-between align-items-center">
 
         <a class="navbar-brand text-success logo h1 align-self-center" href="{{route('index')}}">
-            B2B
+            <img src="{{asset('img/b2b-icon.jpg')}}" height="100px">
         </a>
 
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@
                         <a class="nav-link" href="{{route('about')}}">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href={{route('shop')}}>Shop</a>
+                        <a class="nav-link" href="{{route('shop')}}">Shop</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href={{route('contact')}}>Contact</a>
@@ -84,9 +84,15 @@
                 <a class="nav-icon d-none d-lg-inline" href="#" data-bs-toggle="modal" data-bs-target="#templatemo_search">
                     <i class="fa fa-fw fa-search text-dark mr-2"></i>
                 </a>
-                <a class="nav-icon position-relative text-decoration-none" href="#">
+                <a class="nav-icon position-relative text-decoration-none" href="{{route('show_quotation')}}">
+                    @php
+
+                    $quotation = \App\Models\Quotation::where('user_id',Auth()->user()->id)->where('status','1')->orderBy('created_at', 'DESC')->first();
+
+                    $cart_total = \App\Models\Quoteline::where('quotation_id',$quotation->id)->count();
+                    @endphp
                     <i class="fa fa-fw fa-cart-arrow-down text-dark mr-1"></i>
-                    <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark">7</span>
+                    <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark">{{$cart_total}}</span>
                 </a>
                 <a class="nav-icon position-relative text-decoration-none" href="#">
                     <i class="fa fa-fw fa-user text-dark mr-3"></i>

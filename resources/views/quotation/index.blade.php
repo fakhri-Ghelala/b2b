@@ -21,7 +21,7 @@
         <td>  {{$quotation->tax}}</td>
         <td>
             <a href="/quotations/update/{{$quotation->id}}">update</a>
-            <button href="/quotations/delete/{{$quotation->id}}" onclick="confirm("voulez vous vraiment supprimer cette ligne");">delete</button>
+            <button href="/quotations/delete/{{$quotation->id}}" onclick="confirm("voulez vous vraiment supprimer cette ligne")x;">delete</button>
         </td>
     </tr>
 
